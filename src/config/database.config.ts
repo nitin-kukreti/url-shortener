@@ -8,5 +8,4 @@ export default registerAs('database', () => ({
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'url_shortener',
   entities: ['dist/**/*.entity{.ts,.js}'],
-  synchronize: process.env.NODE_ENV !== 'production',
 }));
