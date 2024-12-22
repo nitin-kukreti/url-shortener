@@ -129,7 +129,7 @@ export class AnalyticsService {
     };
   }
 
-  async getTopicStats(topic: string) {
+  async getTopicStats(topic: string, userId: string) {
     // Query 1: Get total count and unique clicks
     const totalStatsQuery = await this.userRepository.query(
       `
@@ -140,9 +140,11 @@ export class AnalyticsService {
         url_clicks
       INNER JOIN short_urls ON short_urls.id = url_clicks."shortUrlId"
       WHERE 
-        short_urls.topic = $1;
+        short_urls.topic = $1
+        AND short_urls."userId" = $2
+        ;
     `,
-      [topic],
+      [topic, userId],
     );
 
     const totalCount = totalStatsQuery[0].TotalCount;
@@ -159,10 +161,12 @@ export class AnalyticsService {
       INNER JOIN short_urls ON short_urls.id = url_clicks."shortUrlId"
       WHERE 
         short_urls.topic = $1
+        AND short_urls."userId" = $2
+
       GROUP BY 
         DATE(url_clicks."createdAt");
     `,
-      [topic],
+      [topic, userId],
     );
 
     // Query 3: Get URLs under the topic
@@ -177,10 +181,11 @@ export class AnalyticsService {
       LEFT JOIN  url_clicks  ON short_urls.id = url_clicks."shortUrlId"
       WHERE 
         short_urls.topic = $1
+        AND short_urls."userId" = $2
       GROUP BY 
         short_urls.alias;
     `,
-      [topic],
+      [topic, userId],
     );
 
     // Combine all results into a single object
@@ -201,7 +206,7 @@ export class AnalyticsService {
     return result;
   }
 
-  async getAnalyticsForShortUrl(alias: string) {
+  async getAnalyticsForShortUrl(alias: string, userId: string) {
     // Query 1: Total Clicks and Unique Clicks
     const totalClicksQuery = await this.userRepository.query(
       `
@@ -212,9 +217,11 @@ export class AnalyticsService {
         url_clicks
       INNER JOIN short_urls ON short_urls.id = url_clicks."shortUrlId"
       WHERE 
-        short_urls.alias = $1;
+        short_urls.alias = $1
+        AND short_urls."userId" = $2;
+
     `,
-      [alias],
+      [alias, userId],
     );
 
     const totalClicks = totalClicksQuery[0].totalClicks;
@@ -232,12 +239,14 @@ export class AnalyticsService {
       WHERE 
         short_urls.alias = $1
         AND url_clicks."createdAt" >= NOW() - INTERVAL '7 days'
+        AND short_urls."userId" = $2
+
       GROUP BY 
         DATE(url_clicks."createdAt")
       ORDER BY 
         date DESC;
     `,
-      [alias],
+      [alias, userId],
     );
 
     // Query 3: OS Type Breakdown
@@ -252,10 +261,11 @@ export class AnalyticsService {
       INNER JOIN short_urls ON short_urls.id = url_clicks."shortUrlId"
       WHERE 
         short_urls.alias = $1
+        AND short_urls."userId" = $2
       GROUP BY 
         url_clicks."osType";
     `,
-      [alias],
+      [alias, userId],
     );
 
     // Query 4: Device Type Breakdown

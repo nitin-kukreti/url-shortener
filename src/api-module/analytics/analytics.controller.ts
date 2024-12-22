@@ -16,12 +16,15 @@ export class AnalyticsController {
   }
 
   @Get('topic/:topic')
-  async getTopicAnalytics(@Param() { topic }: AnalyticTopic) {
-    return await this.analyticsService.getTopicStats(topic);
+  async getTopicAnalytics(@Req() req, @Param() { topic }: AnalyticTopic) {
+    return await this.analyticsService.getTopicStats(topic, req.user.userId);
   }
 
   @Get(':alias')
-  async getAliasAnalytics(@Param() { alias }: AnalyticAlias) {
-    return await this.analyticsService.getAnalyticsForShortUrl(alias);
+  async getAliasAnalytics(@Req() req, @Param() { alias }: AnalyticAlias) {
+    return await this.analyticsService.getAnalyticsForShortUrl(
+      alias,
+      req.user.userId,
+    );
   }
 }
