@@ -13,6 +13,7 @@ services:
       - app-network
 
   app:
+    hostname: app
     build:
       context: .
       dockerfile: Dockerfile
